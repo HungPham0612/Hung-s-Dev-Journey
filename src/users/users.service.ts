@@ -12,14 +12,18 @@ export class UsersService {
 
   async createUser(
     username: string,
-    password: string,
     email: string,
+    password: string,
   ): Promise<User> {
-    const newUser = this.useRespository.create({ username, password, email });
+    const newUser = this.useRespository.create({ username, email, password });
     return await this.useRespository.save(newUser);
   }
 
   async getAllUser(): Promise<User[]> {
     return this.useRespository.find();
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.useRespository.findOne({ where: { email } });
   }
 }
