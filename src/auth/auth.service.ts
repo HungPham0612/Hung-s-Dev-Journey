@@ -9,10 +9,23 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async getUserProfile(userId: number) {
+    return this.usersService.findById(userId);
+  }
+
   //sign up
-  async signup(username: string, password: string, email: string) {
+  async signup(
+    firstname: string,
+    lastname: string,
+    username: string,
+    password: string,
+    email: string,
+  ) {
     const hashedPassword: string = await this.hashPassword(password);
     const newUser = await this.usersService.createUser(
+      firstname,
+      lastname,
       username,
       email,
       hashedPassword,
@@ -44,7 +57,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     //Create JWT token
-    const payload = { userId: user.id, email: user.email };
+    const payload = {
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+    };
     const access_token = this.jwtService.sign(payload);
 
     return { access_token };

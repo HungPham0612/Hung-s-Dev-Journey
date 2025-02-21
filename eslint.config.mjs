@@ -17,11 +17,14 @@ export default tseslint.config(
         ...globals.node,
         ...globals.jest,
       },
-      ecmaVersion: 5,
+      ecmaVersion: 2021,
       sourceType: 'module',
+      parser: tseslint.parser,
       parserOptions: {
+        project: './tsconfig.json',
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
+        sourceType: 'module',
       },
     },
   },
@@ -30,7 +33,9 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-argument': "error",
-      "@typescript-eslint/no-unnecessary-type-assertion": "error"
+      "@typescript-eslint/no-unnecessary-type-assertion": "error",
+      "@typescript-eslint/no-unsafe-member-access": "error",
+      "@typescript-eslint/no-unsafe-call": "error",
     },
   },
 );
