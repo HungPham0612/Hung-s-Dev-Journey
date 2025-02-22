@@ -20,6 +20,7 @@ export default tseslint.config(
       ecmaVersion: 2021,
       sourceType: 'module',
       parser: tseslint.parser,
+
       parserOptions: {
         project: './tsconfig.json',
         projectService: true,
@@ -36,6 +37,10 @@ export default tseslint.config(
       "@typescript-eslint/no-unnecessary-type-assertion": "error",
       "@typescript-eslint/no-unsafe-member-access": "error",
       "@typescript-eslint/no-unsafe-call": "error",
+      "@typescript-eslint/no-unsafe-assignment": "error",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/<rule-name>": "error",
     },
   },
 );

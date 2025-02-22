@@ -1,13 +1,25 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import nodemailer from 'nodemailer';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { randomBytes } from 'crypto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/users.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async getUserProfile(userId: number) {
@@ -65,5 +77,64 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload);
 
     return { access_token };
+  }
+
+  //forgot password
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    //Create a token reset
+    const resetToken = randomBytes(32).toString('hex');
+    user.resetToken = resetToken;
+    user.resetTokenExpiresAt = new Date(Date.now() + 3600000);
+
+    await this.userRepository.save(user);
+
+    //Ethereal Email profile
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      auth: {
+        user: 'camryn.goyette76@ethereal.email',
+        pass: 'mAvE3Kj77jP8bGvkGU',
+      },
+    });
+
+    const resetLink = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: '"Support" <camryn.goyette76@ethereal.email>',
+      to: user.email,
+      subject: 'Password Reset Request',
+      text: `You requested a password reset. Click the link: ${resetLink}`,
+    });
+
+    return { message: 'Password reset token sent to email' };
+  }
+
+  //Reset password
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.userRepository.findOne({
+      where: { resetToken: token },
+    });
+
+    if (
+      !user ||
+      !user.resetTokenExpiresAt ||
+      user.resetTokenExpiresAt < new Date()
+    ) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+    // New password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpiresAt = null;
+
+    await this.userRepository.save(user);
+
+    return { message: 'Password reset successfully' };
   }
 }
