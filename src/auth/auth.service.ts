@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/users.entity';
 
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -35,6 +36,7 @@ export class AuthService {
   isTokenRevoked(token: string): boolean {
     return this.revokedToken.has(token);
   }
+
 
   //sign up
   async signup(
@@ -147,4 +149,20 @@ export class AuthService {
 
     return { message: 'Password reset successfully' };
   }
-}
+
+  //update profile
+  async updateUserProfile(userId: number, updateUserDto:{username?: string; email?: string; firstname?: string; lastname?: string;}) {
+    const user = await this.usersService.findById(userId);
+    if (user) {
+      updateUserDto.username && (user.username = updateUserDto.username);
+      updateUserDto.email && (user.email = updateUserDto.email);
+      updateUserDto.firstname && (user.firstname = updateUserDto.firstname);
+      updateUserDto.lastname && (user.lastname = updateUserDto.lastname);
+
+      await this.usersService.save(user);
+      
+    } else {
+      throw new Error("User not found");
+    }
+  }
+} 

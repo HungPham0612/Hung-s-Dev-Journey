@@ -6,6 +6,7 @@ import {
   UseGuards,
   UnauthorizedException,
   Request,
+  Put
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -73,6 +74,17 @@ export class AuthController {
     };
   }
 
+  //endpoint for update profile
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(
+    @Request() req,
+    @Body() updateUserDto: { username?: string; email?: string; firstname?: string; lastname?: string},
+  ) {
+    await this.authService.updateUserProfile(req.user.id, updateUserDto);
+    return {message: 'Profile updated successfully'}
+  }
+
   //endpoint for forgot-password
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
@@ -93,7 +105,7 @@ export class AuthController {
   @Post('logout')
   async logout(@Request() req){
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if(!token){
       return {message: 'No token provide' };
     }
