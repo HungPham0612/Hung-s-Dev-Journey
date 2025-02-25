@@ -26,6 +26,16 @@ export class AuthService {
     return this.usersService.findById(userId);
   }
 
+  private revokedToken: Set<string> = new Set();
+
+  async logout(token: string){
+    this.revokedToken.add(token);
+  }
+
+  isTokenRevoked(token: string): boolean {
+    return this.revokedToken.has(token);
+  }
+
   //sign up
   async signup(
     firstname: string,

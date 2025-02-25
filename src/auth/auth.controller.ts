@@ -5,10 +5,11 @@ import {
   Get,
   UseGuards,
   UnauthorizedException,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { Request } from '@nestjs/common';
+
 
 interface RequestWithUser extends Request {
   user?: {
@@ -72,16 +73,31 @@ export class AuthController {
     };
   }
 
+  //endpoint for forgot-password
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);
   }
 
+  //endpoint for reset-password
   @Post('reset-password')
   async resetPassword(
     @Body('token') token: string,
     @Body('newPassword') newPassword: string,
   ) {
     return this.authService.resetPassword(token, newPassword);
+  }
+
+  //endpoint for logout 
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req){
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if(!token){
+      return {message: 'No token provide' };
+    }
+    await this.authService.logout(token);
+    return {message: 'User logged out successfully'};
   }
 }
