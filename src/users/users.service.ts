@@ -42,4 +42,16 @@ export class UsersService {
   async save(user:User): Promise<User>{
     return await this.useRespository.save(user);
   }
+
+  async deactivateUser (userId: number): Promise<{message: string}> {
+    const user = await this.useRespository.findOne({where: {id:userId} });
+
+    if(!user) {
+      throw new Error('User not found')
+    }
+    user.isActive = false;
+    await this.useRespository.save(user);
+
+    return {message: "User account has been deactivated"}
+  }
 }

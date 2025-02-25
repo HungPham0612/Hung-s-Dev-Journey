@@ -6,10 +6,12 @@ import {
   UseGuards,
   UnauthorizedException,
   Request,
-  Put
+  Put, 
+  Delete
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { UsersService } from 'src/users/users.service';
 
 
 interface RequestWithUser extends Request {
@@ -24,7 +26,10 @@ interface RequestWithUser extends Request {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   //endpoint for signup
   @Post('signup')
@@ -112,4 +117,13 @@ export class AuthController {
     await this.authService.logout(token);
     return {message: 'User logged out successfully'};
   }
+
+  //endpoint for deactivated
+  @UseGuards(JwtAuthGuard)
+  @Delete('deactivate')
+  async deactiveAccount(@Request() req){
+    const userId = req.user.id;
+    return this.usersService.deactivateUser(userId);
+  }
+
 }
